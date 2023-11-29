@@ -44,6 +44,14 @@ The project will involve the following steps:
 
 
 
+## Notes from drop-in Session 
+
+
+- Result Section should tell the story of the development itself
+- The kind of format should be: Document/Lesson Learned 
+- Start writing very early-on, write code with while writing the draft itself
+
+
 
 
 
