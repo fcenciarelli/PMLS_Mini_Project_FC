@@ -5,6 +5,34 @@ import numpy as np
 
 
 
+def conv_forward(x, w, b):
+
+  N, C, H, W = x.shape 
+  F, _, FH, FW = w.shape
+
+  stride = 1                  
+  padding =  (FH - 1) // 2   
+
+  out = np.zeros((N, F, H, W))
+
+  padded_x = np.pad(x, ((0, 0), (0, 0), (padding, padding), (padding, padding)), mode='constant')
+  _, _, padded_H, padded_W = padded_x.shape
+
+  x_col = np.zeros((C * FH * FW, H * W))
+  w_row = w.reshape(F, C * FH * FW)
+
+  for i in range(N):
+    c = 0
+    for j in range(0, padded_H - FH + 1, stride):
+      for k in range(0, padded_W - FW + 1, stride):
+        x_col[:, c] = padded_x[i, :, j:j+FH, k:k+FW].reshape(C * FH * FW)
+        c += 1
+    out[i, :] = (np.dot(w_row, x_col) + b.reshape(-1, 1)).reshape(F, H, W)
+  
+  cache = (x, w, b, stride, padding)
+  return out, cache 
+
+
 def max_pool_forward(x, shape=[2, 2], stride=2):
 
     N, C, H, W = x.shape
@@ -52,7 +80,20 @@ def max_pool_backward(dout, cache):
     return dx 
 
 
+def relu_forward(x):
 
+    out = np.maximum(x, 0 )
+    cache = x
+
+    return out, cache
+
+
+def relu_backward(dout, cache):
+
+    x = cache
+    dx = dout * (x > 0)
+
+    return dx
 
 
 
@@ -122,15 +163,32 @@ def testing_FC_backward():
 
     dx, dw, db = FC_backward(dout, cache)
 
-    # Output the results
     print("dx:\n", dx)
     print("\ndw:\n", dw)
     print("\ndb:\n", db)
 
 
 
+def testing_conv_forward():
+    N, C, H, W = 1, 1, 4, 4  
+    F, FH, FW = 1, 3, 3  
 
-testing_FC_backward()
+    x = np.arange(1, N * C * H * W + 1).reshape(N, C, H, W)
+    w = np.array([[[[1,2,3], 
+                    [1, 2,3],
+                    [1, 2, 3]]]])
+    b = np.zeros(F)
+
+    out = conv_forward(x, w, b)
+
+    print("Input:\n", x)
+    print("\nFilter:\n", w)
+    print("\nBias:\n", b)
+    print("\nOutput:\n", out)
+
+
+
+testing_conv_forward()
 
 
 # class ConvNet(object):

@@ -4,6 +4,93 @@
 
 
 
+void testing_conv_forward() {
+    int N = 1;  // Number of samples (batch size)
+    int C = 1;  // Number of channels
+    int H = 4;  // Height of the input matrix
+    int W = 4;  // Width of the input matrix
+    int F = 1;  // Number of filters
+    int FH = 3; // Filter height
+    int FW = 3; // Filter width
+
+    // Allocate and initialize input (x), filter (w), and bias (b)
+    double x[N * C * H * W];
+    double w[F * C * FH * FW];
+    double b[F];
+
+    // Initialize x with some values
+    for (int i = 0; i < N * C * H * W; ++i) {
+        x[i] = i + 1;
+    }
+
+    // Initialize w with some values
+    for (int i = 0; i < F * C * FH * FW; ++i) {
+        w[i] = (i % FH) + 1;  // Simple pattern for filter values
+    }
+
+    // Initialize bias to zero
+    for (int i = 0; i < F; ++i) {
+        b[i] = 0;
+    }
+    // Allocate memory for output
+    double *out = (double *)malloc(N * F * H * W * sizeof(double));
+
+    // Perform convolution
+    conv_forward(x, w, b, out, N, C, H, W, F, FH, FW);
+
+    // Print the input, filter, and output
+    printf("Input:\n");
+    for (int i = 0; i < N * C * H * W; ++i) {
+        printf("%f ", x[i]);
+        if ((i + 1) % W == 0) printf("\n");
+    }
+
+    printf("\nFilter:\n");
+    for (int i = 0; i < F * C * FH * FW; ++i) {
+        printf("%f ", w[i]);
+        if ((i + 1) % FW == 0) printf("\n");
+    }
+
+    printf("\nOutput:\n");
+    for (int i = 0; i < N * F * H * W; ++i) {
+        printf("%f ", out[i]);
+        if ((i + 1) % W == 0) printf("\n");
+    }
+
+    // Free the allocated memory
+    free(out);
+}
+
+
+void testing_relu()
+{
+    int size = 5;
+    double x[] = {-1.0, 0.0, 1.0, 2.0, -2.0}; 
+    double out[size];  
+    double dout[] = {1.0, 1.0, 1.0, 1.0, 1.0}; 
+    double dx[size];
+
+
+    relu_forward(x, out, size);
+
+    printf("ReLU Forward:\n");
+    for (int i = 0; i < size; ++i) {
+        printf("%f ", out[i]);
+    }
+    printf("\n");
+
+    relu_backward(dout, out, dx, size);
+
+    printf("ReLU Backward:\n");
+    for (int i = 0; i < size; ++i) {
+        printf("%f ", dx[i]);
+    }
+    printf("\n");
+
+
+
+}
+
 
 void testing_FC_forward() 
 {
@@ -113,7 +200,7 @@ void testing_max_pool()
 int main() {
     int three = 1 + 2;
 
-    testing_max_pool();
+    testing_conv_forward();
     printf("The sum of 1 and 2 is: ");
     printf("%d", three);
     printf("\n");
