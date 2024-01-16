@@ -1,58 +1,47 @@
 
 
-# On-device Learning on ultra-low power microcontroller with CNN accelerator (MAX78000)
+# On-device training on the MAX78000 ultra-low-power CNN accelerator
 
-The project involves the creation of an on-device learning system that runs on the MAX78000 board. This board provides a cortex-M4 with a CNN engine supporting 1-, 2-, 4-, and 8-bit weights, with SRAM weight storage of 442KB and 512KB of data memory.
-The on-device learning will be implemented by carrying out backpropagation on the layers of the neural network running on the device. 
+The project was inspired by previous work done in this repo as a Master Project (https://github.com/Gio200023/Continual-Learning-on-Max78000). 
+The author of that repo however did not created a complete update script. So the aim of this project was to build on his work and create a complete system. To do so most of the functions were rewritten from sctach in C to improve speed of execution and improve formatting.
 
-## Aim
-
-Obtain a system where starting with not well-trained or well tuned NN for KWS20 or MNIST on MAX78000, the board can be fed data and labels that will increase the accuracy of the model. (e.g. Train well with 9 keywords and then learn a 10th on the device itself by giving it data and carrying out training on-board.
+## Repository Structure
 
 
-## Steps
+- /training_scripts = Training scripts containing the model architecture used and a custom train file made to test fine tuning. At the same time contains the trained model file. To run the files please follow https://github.com/MaximIntegratedAI/ai8x-training and https://github.com/MaximIntegratedAI/ai8x-synthesis where you can install two virtual environments.
 
-The project will involve the following steps:
+- /python_scripts = Python Scripts do decode weights arrangement and at the same time create samples in C that will be accepted by MAX78000
 
-*DONE* 1- **Training a neural network with KWS20 and MNIST to run on MAX78000**, using Maxim Integrated Pytorch framework to convert to code executable on the MAX78000 (Difficulty 2/10)
+- /mnist_training = C compiled project code
 
-*STARTED* 2- **Carry out backpropagation** and weight update on-device on the last fully-connected (Difficulty 6/10)
+Contains the compiled C code to carry out training on the device.
 
- --- 2.1 Write functions in python to test 
- 
- --- 2.2 Write the functions in C++ to execute them on the board
+-cnn.h and cnn.c= contains instruction to control the CNN accelerator
+```c
+int cnn_unload_frozen_layer(uint32_t *out_buf);
+int cnn_init_layer(int layer_num);
+int cnn_config_layer(int layer_num);
+int cnn_start_layer(int layer_num);
+int cnn_stop_SMs();
+int get_next_OS_layer(int layer_count);
+int get_last_OS_layer();
+```
 
-(Repeat for KWS20 and MNIST)
+-backpropagation.h and backpropagation.c= contains functions to handle the weights and biases and carry out calculations
 
+```c
+void output_layer3(const int32_t out, uint8_t *final);
 
-3- **Find a way to carry out backpropagation also on the convolutional layers**, not only the fully connected  (In theory it is possible to offload the weights by freezing the layer and memcpy -ing the weights) (Will probably run into memory issues with a lot of layers?) (Difficulty 9/10) (Maybe need to be using TinyEngine??)
+int mod2(int val);
 
---- 3.1 Write functions in python to test, hard to find kernels location maybe, but interesting challenge
+void get_bias(int8_t biases[10]);
+void set_bias(int8_t biases[10]);
+void get_weights(uint8_t  weights[10][192]);
+void set_weights(uint8_t  weights[10][192]);
+float cross_entropy_loss(float* softmax_output, int* lables, int output_size, int batch_size);
 
---- 3.2 Write the functions in C++ to execute them on the board
-(Repeat for KWS20 and MNIST)
+```
 
-(Repeat for KWS20 and MNIST)
-
-
-4- Carry out **contribution analysis** on each layer for both sound and image data (to see how each layer training affects the model accuracy) (Difficulty 4/10)
-
-5- Use contribution analysis to carry out sparse layer updates to remain in the memory constrains (Difficulty 8/10)
-
-
-(6- Analyse how the accuracy varies with 1-, 2-, 4-, 8- bit weights if anything before does not work as planned) (Difficulty 4/10)
-
-
-
-## Notes from drop-in Session 
-
-
-- Result Section should tell the story of the development itself
-- The kind of format should be: Document/Lesson Learned 
-- Start writing very early-on, write code with while writing the draft itself
-
-
-
-
+-main.c contains the main script with the training loop
 
 
